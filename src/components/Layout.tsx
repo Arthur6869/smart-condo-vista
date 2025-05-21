@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -8,7 +7,7 @@ import {
   Users, 
   Settings, 
   Calendar, 
-  Tool, 
+  Wrench, 
   DollarSign,
   MessageSquare,
   Menu,
@@ -61,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { 
       path: "/maintenance", 
       label: "Manutenções", 
-      icon: <Tool className="w-5 h-5" /> 
+      icon: <Wrench className="w-5 h-5" /> 
     },
     { 
       path: "/reservations", 

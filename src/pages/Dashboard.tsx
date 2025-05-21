@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { 
   DollarSign, 
-  Tool, 
+  Wrench, 
   Calendar, 
   AlertCircle,
   TrendingUp,
@@ -121,7 +120,7 @@ const Dashboard: React.FC = () => {
         <StatsCard 
           title="Manutenções"
           value={statsData.maintenance.pending}
-          icon={<Tool className="h-10 w-10 text-red-500" />}
+          icon={<Wrench className="h-10 w-10 text-red-500" />}
           description="pendentes"
           variant="red"
         />
