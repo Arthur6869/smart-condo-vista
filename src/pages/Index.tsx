@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 
-// Simulate authentication
+// Função para verificar autenticação
 const isAuthenticated = () => {
   return localStorage.getItem("isAuthenticated") === "true";
 };
@@ -13,12 +13,9 @@ const Index: React.FC = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   
-  // Simulate checking authentication status
   useEffect(() => {
     const checkAuth = async () => {
-      // For demo purposes, set authentication to true
-      // In a real app, we would check with a backend API
-      localStorage.setItem("isAuthenticated", "true");
+      // Em um app real, verificaríamos com um backend
       const auth = isAuthenticated();
       setAuthenticated(auth);
       setCheckingAuth(false);

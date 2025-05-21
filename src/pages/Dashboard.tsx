@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { 
   DollarSign, 
   Wrench, 
   Calendar, 
   AlertCircle,
   TrendingUp,
-  ChevronRight
+  ChevronRight,
+  HomeIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +58,13 @@ const getReservationStatusColor = (status: "pending" | "approved" | "rejected") 
 const Dashboard: React.FC = () => {
   const [timeFrame, setTimeFrame] = useState("month");
   const [selectedProperty, setSelectedProperty] = useState(properties[0].id);
+  const [userRole, setUserRole] = useState<"manager" | "resident" | "admin">("resident");
+
+  useEffect(() => {
+    // Get user role from localStorage
+    const role = localStorage.getItem("userRole") as "manager" | "resident" | "admin";
+    setUserRole(role || "resident");
+  }, []);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -64,11 +73,12 @@ const Dashboard: React.FC = () => {
     }).format(value);
   };
 
-  return (
+  // Dashboard do Síndico
+  const ManagerDashboard = () => (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold">Dashboard do Síndico</h1>
           <p className="text-muted-foreground">Bem-vindo ao painel de controle</p>
         </div>
         
@@ -277,6 +287,199 @@ const Dashboard: React.FC = () => {
       </div>
     </div>
   );
+
+  // Dashboard do Morador
+  const ResidentDashboard = () => (
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Olá, Morador</h1>
+          <p className="text-muted-foreground">Bem-vindo ao seu painel</p>
+        </div>
+        
+        <Button variant="outline" className="flex items-center gap-2">
+          <HomeIcon className="h-4 w-4" />
+          <span>Apto 303, Bloco B</span>
+        </Button>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <StatsCard 
+          title="Próximo Vencimento"
+          value={formatCurrency(550)}
+          icon={<DollarSign className="h-10 w-10 text-condo-blue" />}
+          description="Taxa de condomínio - 10/06/2025"
+          variant="blue"
+        />
+        <StatsCard 
+          title="Solicitações"
+          value="2"
+          icon={<Wrench className="h-10 w-10 text-amber-500" />}
+          description="manutenções em andamento"
+          variant="orange"
+        />
+        <StatsCard 
+          title="Próximas Reservas"
+          value="1"
+          icon={<Calendar className="h-10 w-10 text-green-500" />}
+          description="salão de festas - 15/06/2025"
+          variant="green"
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <InfoCard 
+          title="Seus Pagamentos" 
+          action={{ 
+            label: "Ver todos", 
+            onClick: () => console.log("Ver todos os pagamentos") 
+          }}
+        >
+          <div className="space-y-4">
+            <Card className="p-4 bg-red-50 border-red-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                    <h3 className="font-medium">Taxa de Condomínio - Maio/2025</h3>
+                  </div>
+                  <p className="text-sm mt-1">Vencimento: 10/05/2025</p>
+                  <p className="font-medium mt-1">{formatCurrency(550)}</p>
+                </div>
+                <Badge variant="destructive">Vencido</Badge>
+              </div>
+              <div className="mt-3">
+                <Button variant="outline" size="sm" className="w-full">Gerar 2ª Via</Button>
+              </div>
+            </Card>
+            
+            <Card className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-amber-500"></div>
+                    <h3 className="font-medium">Taxa de Condomínio - Junho/2025</h3>
+                  </div>
+                  <p className="text-sm mt-1">Vencimento: 10/06/2025</p>
+                  <p className="font-medium mt-1">{formatCurrency(550)}</p>
+                </div>
+                <Badge variant="outline">A vencer</Badge>
+              </div>
+              <div className="mt-3">
+                <Button variant="outline" size="sm" className="w-full">Visualizar Boleto</Button>
+              </div>
+            </Card>
+          </div>
+        </InfoCard>
+
+        <InfoCard 
+          title="Suas Manutenções" 
+          action={{ 
+            label: "Solicitar Nova", 
+            onClick: () => console.log("Solicitar nova manutenção") 
+          }}
+        >
+          <div className="space-y-4">
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                    <h3 className="font-medium">Vazamento na cozinha</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Solicitado em: 28/04/2025</p>
+                  <div className="mt-1">
+                    <Badge variant="outline">Em andamento</Badge>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Card>
+            
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                    <h3 className="font-medium">Problema elétrico</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Solicitado em: 15/05/2025</p>
+                  <div className="mt-1">
+                    <Badge variant="outline">Em andamento</Badge>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Card>
+          </div>
+        </InfoCard>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <InfoCard 
+          title="Reservar Espaços" 
+          action={{ 
+            label: "Ver Calendário Completo", 
+            onClick: () => console.log("Ver calendário completo") 
+          }}
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer flex flex-col items-center text-center">
+              <div className="bg-primary/10 p-3 rounded-full mb-3">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-medium">Salão de Festas</h3>
+              <p className="text-sm text-muted-foreground mt-1">Capacidade: 50 pessoas</p>
+              <Button variant="outline" size="sm" className="mt-3 w-full">Reservar</Button>
+            </Card>
+            
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer flex flex-col items-center text-center">
+              <div className="bg-primary/10 p-3 rounded-full mb-3">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-medium">Churrasqueira</h3>
+              <p className="text-sm text-muted-foreground mt-1">Capacidade: 20 pessoas</p>
+              <Button variant="outline" size="sm" className="mt-3 w-full">Reservar</Button>
+            </Card>
+          </div>
+        </InfoCard>
+
+        <InfoCard 
+          title="Comunicados Recentes" 
+          action={{ 
+            label: "Ver Todos", 
+            onClick: () => console.log("Ver todos os comunicados") 
+          }}
+        >
+          <div className="space-y-4">
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium">Manutenção na Piscina</h3>
+                  <p className="text-sm text-muted-foreground mt-1">A piscina ficará fechada para manutenção entre os dias 10 e 15 de junho.</p>
+                  <p className="text-xs text-muted-foreground mt-2">Publicado em: 20/05/2025</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Card>
+            
+            <Card className="p-4 hover:bg-muted/50 cursor-pointer">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium">Assembleia Geral</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Comunicamos a todos que haverá Assembleia Geral no dia 25/06/2025 às 19h no Salão de Festas.</p>
+                  <p className="text-xs text-muted-foreground mt-2">Publicado em: 15/05/2025</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </Card>
+          </div>
+        </InfoCard>
+      </div>
+    </div>
+  );
+
+  return userRole === "manager" ? <ManagerDashboard /> : <ResidentDashboard />;
 };
 
 export default Dashboard;

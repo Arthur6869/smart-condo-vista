@@ -7,12 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [userRole, setUserRole] = useState<"manager" | "resident">("resident");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,6 +44,10 @@ const Login: React.FC = () => {
       
       // For demo purposes, accept any email with password "password"
       if (password === "password") {
+        // Save user role in localStorage
+        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("isAuthenticated", "true");
+        
         toast({
           title: "Login realizado com sucesso!",
           description: "Redirecionando para o dashboard..."
@@ -126,6 +138,21 @@ const Login: React.FC = () => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="userRole">Tipo de Usuário</Label>
+                <Select 
+                  value={userRole} 
+                  onValueChange={(value) => setUserRole(value as "manager" | "resident")}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione seu tipo de usuário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="resident">Morador</SelectItem>
+                    <SelectItem value="manager">Síndico</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col">

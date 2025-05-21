@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, 
   LayoutDashboard, 
@@ -17,7 +18,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/data/mockData";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,9 +35,29 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<"manager" | "resident" | "admin">("resident");
+  const [userName, setUserName] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const navItems = [
+  useEffect(() => {
+    // Get user role from localStorage
+    const role = localStorage.getItem("userRole") as "manager" | "resident" | "admin";
+    setUserRole(role || "resident");
+    
+    // Set user name based on role for demo
+    if (role === "manager") {
+      setUserName("Maria Silva");
+    } else if (role === "resident") {
+      setUserName("João Pereira");
+    } else {
+      setUserName("Usuário");
+    }
+  }, []);
+
+  // Diferentes menus para síndico e morador
+  const managerNavItems = [
     { 
       path: "/", 
       label: "Dashboard", 
@@ -79,12 +100,61 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
   ];
 
+  const residentNavItems = [
+    { 
+      path: "/", 
+      label: "Dashboard", 
+      icon: <LayoutDashboard className="w-5 h-5" /> 
+    },
+    { 
+      path: "/my-unit", 
+      label: "Meu Apartamento", 
+      icon: <Home className="w-5 h-5" /> 
+    },
+    { 
+      path: "/finances", 
+      label: "Meus Pagamentos", 
+      icon: <DollarSign className="w-5 h-5" /> 
+    },
+    { 
+      path: "/maintenance", 
+      label: "Solicitar Manutenção", 
+      icon: <Wrench className="w-5 h-5" /> 
+    },
+    { 
+      path: "/reservations", 
+      label: "Reservar Espaços", 
+      icon: <Calendar className="w-5 h-5" /> 
+    },
+    { 
+      path: "/messages", 
+      label: "Mensagens", 
+      icon: <MessageSquare className="w-5 h-5" /> 
+    },
+  ];
+
+  const navItems = userRole === "manager" ? managerNavItems : residentNavItems;
+
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userRole");
+    
+    toast({
+      title: "Logout realizado com sucesso",
+      description: "Redirecionando para a página de login..."
+    });
+    
+    // Redirect to login page
+    navigate("/login");
   };
 
   return (
@@ -126,18 +196,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="p-4 border-t border-sidebar-border">
           {collapsed ? (
             <Avatar>
-              <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-              <AvatarFallback>{currentUser.name.substring(0, 2)}</AvatarFallback>
+              <AvatarFallback>{userName.substring(0, 2)}</AvatarFallback>
             </Avatar>
           ) : (
             <div className="flex items-center gap-3">
               <Avatar>
-                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                <AvatarFallback>{currentUser.name.substring(0, 2)}</AvatarFallback>
+                <AvatarFallback>{userName.substring(0, 2)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-sidebar-foreground">{currentUser.name}</p>
-                <p className="text-xs text-sidebar-foreground/80">{currentUser.role === "manager" ? "Síndico" : currentUser.role === "admin" ? "Administrador" : "Morador"}</p>
+                <p className="font-medium text-sidebar-foreground">{userName}</p>
+                <p className="text-xs text-sidebar-foreground/80">
+                  {userRole === "manager" ? "Síndico" : userRole === "admin" ? "Administrador" : "Morador"}
+                </p>
               </div>
             </div>
           )}
@@ -189,12 +259,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-              <AvatarFallback>{currentUser.name.substring(0, 2)}</AvatarFallback>
+              <AvatarFallback>{userName.substring(0, 2)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium text-sidebar-foreground">{currentUser.name}</p>
-              <p className="text-xs text-sidebar-foreground/80">{currentUser.role === "manager" ? "Síndico" : currentUser.role === "admin" ? "Administrador" : "Morador"}</p>
+              <p className="font-medium text-sidebar-foreground">{userName}</p>
+              <p className="text-xs text-sidebar-foreground/80">
+                {userRole === "manager" ? "Síndico" : userRole === "admin" ? "Administrador" : "Morador"}
+              </p>
             </div>
           </div>
         </div>
@@ -249,8 +320,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full" size="icon">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={currentUser.avatar} />
-                    <AvatarFallback>{currentUser.name.substring(0, 2)}</AvatarFallback>
+                    <AvatarFallback>{userName.substring(0, 2)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -259,7 +329,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">Preferências</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sair</span>
                 </DropdownMenuItem>
